@@ -68,10 +68,8 @@ export default {
         headTop
     },
     mounted(){
-        // console.log(this.userInfo)
+        console.log(this.userInfo)
         this.initData()
-        // console.log(this)
-        console.log(this)
     },
     computed:{
         ...mapState([
