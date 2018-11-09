@@ -4,6 +4,7 @@ const home = r=>require.ensure([],()=>r(require('../page/home/home')),'home')
 const city = r=>require.ensure([],()=>r(require('../page/city/city')),'city')
 const login = r=>require.ensure([],()=>r(require('../page/login/login')),'login')
 const profile = r=>require.ensure([],()=>r(require('../page/profile/profile')),'profile')
+const msite = r => require.ensure([], () => r(require('../page/msite/msite')), 'msite')
 Vue.use(Router)
 
 export default new Router({
@@ -32,6 +33,12 @@ export default new Router({
     {
       path:'/profile',
       component:profile
+    },
+    //所有商铺列表页
+    {
+      path:'/msite',
+      component:msite,
+      meta:{keepAlive: true}
     }
   ]
 })

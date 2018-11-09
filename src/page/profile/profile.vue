@@ -44,11 +44,100 @@
                     </router-link>
                 </ul>
             </section>
+            <section class="profile-1reTe">
+                <!-- 我的订单 -->
+                <router-link to="" class="myorder">
+                    <aside>
+                        <svg fill="#4aa5f0">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#order"></use>
+                        </svg>
+                    </aside>
+                    <div class="myorder-div">
+                        <span>我的订单</span>
+                        <span class="myorder-divsvg">
+                            <svg fill="#bbb">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrow-right"></use>
+                            </svg>
+                        </span>
+                    </div>
+                </router-link>
+                <!-- 积分商城 -->
+                <a href='https://home.m.duiba.com.cn/#/chome/index' class="myorder">
+                    <aside>
+                        <svg fill="#fc7b53">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#point"></use>
+                        </svg>
+                    </aside>
+                    <div class="myorder-div">
+                        <span>积分商城</span>
+                        <span class="myorder-divsvg">
+                            <svg fill="#bbb">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrow-right"></use>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+                <!-- 饿了么会员卡 -->
+                <router-link to='/vipcard' class="myorder">
+                    <aside>
+                        <svg fill="#ffc636">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#vip"></use>
+                        </svg>
+                    </aside>
+                    <div class="myorder-div">
+                        <span>饿了么会员卡</span>
+                        <span class="myorder-divsvg">
+                            <svg fill="#bbb">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrow-right"></use>
+                            </svg>
+                        </span>
+                    </div>
+                </router-link>
+            </section>
+            <section class="profile-1reTe">
+                <!-- 服务中心 -->
+                <router-link to='/service' class="myorder">
+                    <aside>
+                        <svg fill="#4aa5f0">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#service"></use>
+                        </svg>
+                    </aside>
+                    <div class="myorder-div">
+                        <span>服务中心</span>
+                        <span class="myorder-divsvg">
+                            <svg fill="#bbb">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrow-right"></use>
+                            </svg>
+                        </span>
+                    </div>
+                </router-link>
+                <!-- 下载饿了么APP -->
+                <router-link to='/download' class="myorder">
+                    <aside>
+                        <svg fill="#3cabff">
+                            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#download"></use>
+                        </svg>
+                    </aside>
+                    <div class="myorder-div" style="border-bottom:0;">
+                        <span>下载饿了么APP</span>
+                        <span class="myorder-divsvg">
+                            <svg fill="#bbb">
+                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#arrow-right"></use>
+                            </svg>
+                        </span>
+                    </div>
+                </router-link>
+            </section>
         </section>
+        <foot-guide></foot-guide>
+        <transition name="router-side" mode="out-in">
+            <router-view></router-view>
+        </transition>
     </div>
 </template>
 <script>
 import headTop from '@/components/header/head'
+import footGuide from '@/components/footer/footGuide'
 import {mapState,mapMutations} from 'vuex'
 import {imgBaseUrl} from '@/config/env'
 
@@ -65,7 +154,8 @@ export default {
         }
     },
     components:{
-        headTop
+        headTop,
+        footGuide
     },
     mounted(){
         console.log(this.userInfo)
@@ -214,7 +304,52 @@ export default {
             }
         }
     }
-
+    .profile-1reTe{
+        margin-top:.4rem;
+        background:$fc;
+        .myorder{
+            padding-left:1.6rem;
+            display:flex;
+            align-items: center;
+            aside{
+                @include wh(.7rem,.7rem);
+                margin-left:-.866667rem;
+                margin-right:.266667rem;
+                display:flex;
+                align-items: center;
+                svg{
+                    @include wh(100%,100%);
+                }
+            }
+            .myorder-div{
+                width:100%;
+                border-bottom:1px solid #f1f1f1;
+                padding:.433333rem .266667rem .433333rem 0;
+                @include sc(.7rem,#333);
+                display:flex;
+                justify-content:space-between;
+                span{
+                    display:block;
+                }
+                .myorder-divsvg{
+                    @include wh(.46667rem,.466667rem);
+                    svg{
+                        @include wh(100%,100%);
+                    }
+                }
+            }
+        }
+        .myorder:nth-of-type(3) .myorder-div{
+            border:0;
+        }
+    }
+    .router-slid-enter-active, .router-slid-leave-active {
+        transition: all .4s;
+    }
+    .router-slid-enter, .router-slid-leave-active {
+        transform: translate3d(2rem, 0, 0);
+        opacity: 0;
+    }
 </style>
 
 

@@ -10,7 +10,7 @@ const state={
 }
 export default new Vuex.Store({
     state,
-    
+    geohash: '31.22299,121.36025',//地址geohash值
     actions,
     mutations,
 })
