@@ -70,6 +70,7 @@ export default {
     mounted(){
         // console.log(this.userInfo)
         this.initData()
+        // console.log(this)
         console.log(this)
     },
     computed:{
