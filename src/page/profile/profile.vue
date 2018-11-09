@@ -68,7 +68,7 @@ export default {
         headTop
     },
     mounted(){
-        console.log(this.userInfo)
+        // console.log(this.userInfo)
         this.initData()
     },
     computed:{
