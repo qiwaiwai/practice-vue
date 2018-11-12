@@ -135,7 +135,7 @@ export const showBack = callback => {
 
     //判断是否达到目标点
     const showBackFun = () => {
-        if (document.body.scrollTop > 500) {
+        if (document.documentElement.scrollTop > 500) {
             callback(true);
         }else{
             callback(false);

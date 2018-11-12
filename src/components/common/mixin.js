@@ -20,7 +20,7 @@ export const loadMore = {
 					scrollEl = el;
 					heightEl = el.children[0];
 				} else {
-					scrollEl = document.body;
+					scrollEl = document.documentElement;
 					heightEl = el;
 				}
 
@@ -57,6 +57,7 @@ export const loadMore = {
 				}
 
 				const loadMore = () => {
+					// console.log(height + setTop + paddingBottom + marginBottom - scrollReduce)
 					if (scrollEl.scrollTop + windowHeight >= height + setTop + paddingBottom + marginBottom - scrollReduce) {
 						binding.value();
 					}

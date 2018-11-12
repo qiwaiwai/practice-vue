@@ -136,10 +136,10 @@
     </div>
 </template>
 <script>
-import headTop from '@/components/header/head'
-import footGuide from '@/components/footer/footGuide'
+import headTop from 'src/components/header/head'
+import footGuide from 'src/components/footer/footGuide'
 import {mapState,mapMutations} from 'vuex'
-import {imgBaseUrl} from '@/config/env'
+import {imgBaseUrl} from 'src/config/env'
 
 export default {
     data(){

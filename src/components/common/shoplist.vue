@@ -1,7 +1,7 @@
 <template>
     <div class="shoplist_container">
-        <ul>
-            <router-link to="" tag="li" class="shop_li">
+        <ul v-load-more="loaderMore" v-if="shopListArr.length" type="1">
+            <router-link to="" v-for="item in shopListArr" tag="li" :key="item.id" class="shop_li">
                 <section>
 					<img :src="imgBaseUrl + item.image_path" class="shop_img">
 				</section>
@@ -15,7 +15,7 @@
 					<h5 class="rating_order_num">
 						<section class="rating_order_num_left">
 							<section class="rating_section">
-								<rating-star :rating='item.rating'></rating-star>
+								<!-- <rating-star :rating='item.rating'></rating-star> -->
 								<span class="rating_num">{{item.rating}}</span>
 							</section>
 							<section class="order_section">
@@ -24,7 +24,7 @@
 						</section>
 						<section class="rating_order_num_right">
 							<span class="delivery_style delivery_left" v-if="item.delivery_mode">{{item.delivery_mode.text}}</span>
-							<span class="delivery_style delivery_right" v-if="zhunshi(item.supports)">准时达</span>
+							<span class="delivery_style delivery_right" >准时达</span>
 						</section>
 					</h5>
 					<h5 class="fee_distance">
@@ -45,13 +45,24 @@
 				</hgroup>
             </router-link>
         </ul>
+		<p v-if="touchend" class="empty_data">没有更多了</p>
+		<aside class="return_top" @click="backTop" v-if="showBackStatus">
+			<svg class="back_top_svg">
+				<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#backtop"></use>
+			</svg>
+		</aside>
+		<transition name="loading">
+			<loading v-show="showLoading"></loading>
+		</transition>
     </div>
 </template>
 <script>
 import {mapState} from 'vuex'
-import {shopList} from '@/service/getData'
-import {imgBaseUrl} from '@/config/env'
-
+import {shopList} from 'src/service/getData'
+import {imgBaseUrl} from 'src/config/env'
+import {loadMore,getImgPath} from './mixin'
+import {showBack,animate} from 'src/config/mUtils'
+import loading from './loading'
 export default {
     data(){
         return {
@@ -63,11 +74,68 @@ export default {
             touchend: false, //没有更多数据
             imgBaseUrl,
         }
-    }
+	},
+	components:{
+		loading
+	},
+	mounted(){
+		this.initData()
+	},
+	props: ['restaurantCategoryId', 'restaurantCategoryIds', 'sortByType', 'deliveryMode', 'supportIds', 'confirmSelect', 'geohash'],
+	mixins:[loadMore,getImgPath],
+	computed:{
+		...mapState([
+			'latitude','longitude'
+		])
+	},
+	methods:{
+		async initData(){
+			//获取数据
+			let res = await shopList(this.latitude, this.longitude, this.offset, this.restaurantCategoryId);
+			this.shopListArr=[...res];
+			if(res.length<20){
+				this.touchend = true;
+			}
+			this.hideLoading()
+			//开始监听scrollTop的值，达到一定程度后显示返回顶部按钮
+			showBack(status=>{
+				this.showBackStatus=status;
+			})
+		},
+		//返回顶部
+		backTop(){
+			animate(document.documentElement, {scrollTop: '0'}, 400,'ease-out');
+		},
+		//到达底部加载更多东西
+		async loaderMore(){
+			if(this.touchend){
+				return
+			}
+			//防止重复请求
+			if(this.preventRepeatReuqest){
+				return
+			}
+			this.showLoading = true;
+			this.preventRepeatReuqest = true;
+			//数据的定位加20位
+			this.offset += 20;
+			let res = await shopList(this.latitude, this.longitude, this.offset, this.restaurantCategoryId);
+			this.hideLoading()
+			this.shopListArr=[...this.shopListArr,...res];
+			if(res.length<20){
+				this.touchend = true;
+				return
+			}
+			this.preventRepeatReuqest = false;
+		},
+		hideLoading(){
+			this.showLoading = false;
+		}
+	}
 }
 </script>
 <style lang="scss" scoped>
-    @import '../../style/mixin';
+    @import 'src/style/mixin';
     .shoplist_container{
 		background-color: #fff;
 		margin-bottom: 2rem;
