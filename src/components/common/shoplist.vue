@@ -1,7 +1,7 @@
 <template>
     <div class="shoplist_container">
         <ul v-load-more="loaderMore" v-if="shopListArr.length" type="1">
-            <router-link to="" v-for="item in shopListArr" tag="li" :key="item.id" class="shop_li">
+            <router-link :to="{path:'shop',query:{geohash,id:item.id}}" v-for="item in shopListArr" tag="li" :key="item.id" class="shop_li">
                 <section>
 					<img :src="imgBaseUrl + item.image_path" class="shop_img">
 				</section>
@@ -15,7 +15,7 @@
 					<h5 class="rating_order_num">
 						<section class="rating_order_num_left">
 							<section class="rating_section">
-								<!-- <rating-star :rating='item.rating'></rating-star> -->
+								<rating-star :rating="item.rating"></rating-star>
 								<span class="rating_num">{{item.rating}}</span>
 							</section>
 							<section class="order_section">
@@ -63,6 +63,7 @@ import {imgBaseUrl} from 'src/config/env'
 import {loadMore,getImgPath} from './mixin'
 import {showBack,animate} from 'src/config/mUtils'
 import loading from './loading'
+import ratingStar from './ratingStar'
 export default {
     data(){
         return {
@@ -76,7 +77,8 @@ export default {
         }
 	},
 	components:{
-		loading
+		loading,
+		ratingStar
 	},
 	mounted(){
 		this.initData()
@@ -106,6 +108,14 @@ export default {
 		backTop(){
 			animate(document.documentElement, {scrollTop: '0'}, 400,'ease-out');
 		},
+		//监听父级传来的数据发生变化时，触发此函数重新根据属性值获取数据
+		async listenPropChange(){
+			this.showLoading = true;
+			this.offset = 0;
+			let res = await shopList(this.latitude, this.longitude, this.offset, '', this.restaurantCategoryIds, this.sortByType, this.deliveryMode, this.supportIds);
+			this.hideLoading();
+			this.shopListArr = [...res];
+		},
 		//到达底部加载更多东西
 		async loaderMore(){
 			if(this.touchend){
@@ -130,6 +140,20 @@ export default {
 		},
 		hideLoading(){
 			this.showLoading = false;
+		}
+	},
+	watch:{
+		//监听父级传来的restaurantCategoryIds，当值发生变化的时候重新获取餐馆数据，作用于排序和筛选
+		restaurantCategoryIds: function (value){
+			this.listenPropChange();
+		},
+		//监听父级传来的排序方式
+		sortByType: function (value){
+			this.listenPropChange();
+		},
+		//监听父级的确认按钮是否被点击，并且返回一个自定义事件通知父级，已经接收到数据，此时父级才可以清除已选状态
+		confirmSelect: function (value){
+			this.listenPropChange();
 		}
 	}
 }
