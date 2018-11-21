@@ -6,6 +6,7 @@ const login = r=>require.ensure([],()=>r(require('../page/login/login')),'login'
 const profile = r=>require.ensure([],()=>r(require('../page/profile/profile')),'profile')
 const msite = r => require.ensure([], () => r(require('../page/msite/msite')), 'msite')
 const food = r => require.ensure([], () => r(require('../page/food/food')), 'food')
+const shop = r => require.ensure([], () => r(require('../page/shop/shop')), 'shop')
 Vue.use(Router)
 
 export default new Router({
@@ -45,6 +46,11 @@ export default new Router({
     {
       path:'/food',
       component:food
+    },
+    //商铺详情页
+    {
+      path:'/shop',
+      component:shop
     }
   ]
 })

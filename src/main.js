@@ -6,7 +6,13 @@ import router from './router'
 import './config/rem'
 import store from './store/'
 Vue.config.productionTip = false
+import FastClick from 'fastclick'
 
+if ('addEventListener' in document) {
+    document.addEventListener('DOMContentLoaded', function() {
+        FastClick.attach(document.body);
+    }, false);
+}
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

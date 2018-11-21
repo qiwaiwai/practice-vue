@@ -11,6 +11,7 @@ body, div, span, header, footer, nav, section, aside, article, ul, dl, dt, dd, l
     box-sizing: border-box;
     -webkit-tap-highlight-color:transparent;
     -webkit-font-smoothing: antialiased;
+    touch-action: none;
     &:hover{
         outline: none;
     }

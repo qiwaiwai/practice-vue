@@ -139,29 +139,29 @@
                         <section style="width: 100%;">
                             <header class="filter_header_style">配送方式</header>
                             <ul class="filter_ul">
-                                <li class="filter_li">
-                                    <svg >
-										<use xmlns:xlink="http://www.w3.org/1999/xlink" ></use>
+                                <li v-for="(item,index) in Delivery" :key="index" class="filter_li" @click="selectDeliveryMode(item.id)">
+                                    <svg :style="{opacity: (item.id == 0)&&(delivery_mode !== 0)? 0: 1}">
+										<use xmlns:xlink="http://www.w3.org/1999/xlink" :xlink:href="delivery_mode == item.id? '#selected':'#fengniao'"></use>
 									</svg>
-                                    <span>蜂鸟配送</span>
+                                    <span :class="{selected_filter: delivery_mode == item.id}">{{item.text}}</span>
                                 </li>
                             </ul>
                         </section>
                         <section style="width: 100%;">
                             <header class="filter_header_style">商家属性（可以多选）</header>
                             <ul class="filter_ul" style="paddingBottom: .5rem;">
-                                <li class="filter_li">
-                                    <svg class="activity_svg">
+                                <li v-for="(item,index) in Activity" :key="index" class="filter_li" @click="selectSupportIds(index,item.id)">
+                                    <svg v-show="support_ids[index].status" class="activity_svg">
 										<use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#selected"></use>
 									</svg>
-                                    <span class="filter_icon">准</span>
-                                    <span>品牌商家</span>
+                                    <span class="filter_icon" :style="{color: '#' + item.icon_color, borderColor: '#' + item.icon_color}" v-show="!support_ids[index].status">{{item.icon_name}}</span>
+                                    <span :class="{selected_filter: support_ids[index].status}">{{item.name}}</span>
                                 </li>
                             </ul>
                         </section>
                         <footer class="confirm_filter">
-	    					<div class="clear_all filter_button_style">清空</div>
-	    					<div class="confirm_select filter_button_style">确定</div>
+	    					<div class="clear_all filter_button_style" @click="clearSelect()">清空</div>
+	    					<div class="confirm_select filter_button_style" @click="confirmSelectFun()">确定<span v-show="filterNum">({{filterNum}})</span></div>
 	    				</footer>
                     </section>
                 </transition>
@@ -235,13 +235,11 @@ export default {
             if(!this.latitude){
                 //获取位置信息
                 let res = await msiteAddress(this.geohash);
-                console.log(res)
                 // 记录当前经度纬度进入vuex
                 this.RECORD_ADDRESS(res);
             }
             //获取category分类左侧数据
             this.category = await foodCategory(this.latitude, this.longitude);
-            console.log(this.category)
             //初始化时定位当前category分类左侧默认选择项，在右侧展示出其sub_categories列表
             this.category.forEach(item=>{
                 if(this.restaurant_category_id==item.id){
@@ -252,6 +250,10 @@ export default {
             this.Delivery = await foodDelivery(this.latitude, this.longitude);
             //获取筛选列表的商铺活动
             this.Activity = await foodActivity(this.latitude, this.longitude);
+            //记录support_ids的状态，默认不选中，点击状态取反，status为true时为选中状态
+            this.Activity.forEach((item, index) => {
+                this.support_ids[index] = { status: false, id: item.id };
+            });
         },
         // 点击顶部三个选项，展示不同的列表，选中当前选项进行展示，同时收回其他选项
         async chooseType(type){
@@ -294,7 +296,6 @@ export default {
         //点击某个排序方式，获取事件对象的data值，并根据获取的值重新获取数据渲染
         sortList(event){
             let node;
-            console.log(event)
             // 如果点击的是 span 中的文字，则需要获取到 span 的父标签 p
             if(event.target.nodeName.toUpperCase() !== 'P'){
                 node = event.target.parentNode;
@@ -302,6 +303,47 @@ export default {
                 node = event.target;
             }
             this.sortByType = node.getAttribute("data");
+            this.sortBy = "";
+        },
+        //筛选选项中的配送方式选择
+        selectDeliveryMode(id){
+            //delivery_mode为空时，选中当前项，并且filterNum加一
+            if(this.delivery_mode==null){
+                this.filterNum++;
+                this.delivery_mode=id;
+            }else if(this.delivery_mode == id){
+                this.filterNum--;
+                this.delivery_mode = null;
+                //delivery_mode已有值且不等于当前选择值，则赋值delivery_mode为当前所选id
+            }else{
+                this.delivery_mode=id
+            }
+        },
+        //点击商家活动，状态取反
+        selectSupportIds(index,id){
+            //数组替换新的值
+            this.support_ids.splice(index,1,{
+                status:!this.support_ids[index].status,
+                id
+            });
+            //重新计算filterNum的个数
+            this.filterNum=this.delivery_mode==null?0:1;
+            this.support_ids.forEach(item=>{
+                if(item.status){
+                    this.filterNum++;
+                }
+            });
+        },
+        //只有点击清空按钮才清空数据，否则一直保持原有状态
+        clearSelect(){
+            this.support_ids.map(item=>{item.status=false});
+            this.filterNum = 0;
+            this.delivery_mode = null;
+        },
+        //点击确认时，将需要筛选的id值传递给子组件，并且收回列表
+        confirmSelectFun() {
+            //状态改变时，因为子组件进行了监听，会重新获取数据进行筛选
+            this.confirmStatus = !this.confirmStatus;
             this.sortBy = "";
         }
     }
@@ -359,12 +401,12 @@ export default {
         .showlist-enter-active,
         .showlist-leave-active{
             transition: all 0.3s;
-            transform: translateY(0)
+            transform: translateY(0px)
         }
         .showlist-enter,
         .showlist-leave-active{
             opacity: 0;
-            transform: translateY(-100%)
+            transform: translateY(100%)
         }
         .sort_detail_type{
             width: 100%;
