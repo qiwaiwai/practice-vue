@@ -7,6 +7,9 @@ const profile = r=>require.ensure([],()=>r(require('../page/profile/profile')),'
 const msite = r => require.ensure([], () => r(require('../page/msite/msite')), 'msite')
 const food = r => require.ensure([], () => r(require('../page/food/food')), 'food')
 const shop = r => require.ensure([], () => r(require('../page/shop/shop')), 'shop')
+const foodDetail = r => require.ensure([], () => r(require('../page/shop/children/foodDetail')), 'foodDetail')
+const shopDetail = r => require.ensure([], () => r(require('../page/shop/children/shopDetail')), 'shopDetail')
+const confirmOrder = r => require.ensure([], () => r(require('../page/confirmOrder/confirmOrder')), 'confirmOrder')
 Vue.use(Router)
 
 export default new Router({
@@ -50,7 +53,22 @@ export default new Router({
     //商铺详情页
     {
       path:'/shop',
-      component:shop
+      component:shop,
+      children:[{
+        path:'foodDetail',
+        component:foodDetail
+      },{
+        path:'shopDetail',
+        component:shopDetail
+      }]
+    },
+    //确认订单页
+    {
+      path:'/confirmOrder',
+      component:confirmOrder,
+      children:[
+        
+      ]
     }
   ]
 })

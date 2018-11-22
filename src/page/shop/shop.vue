@@ -1,7 +1,7 @@
 <template>
     <div>
         <section v-if="!showLoading" class="shop_container">
-            <nav class="goback">
+            <nav class="goback" @click="goBack">
                 <svg width="4rem" height="100%" xmlns="http://www.w3.org/2000/svg" version="1.1">
                     <polyline points="12,18 4,9 12,0" style="fill:none;stroke:rgb(255,255,255);stroke-width:3"/>
                 </svg>
@@ -9,7 +9,7 @@
             <header class="shop_detail_header" ref="shopheader" :style="{zIndex: showActivities? '14':'10'}">
                 <img :src="imgBaseUrl + shopDetailData.image_path" class="header_cover_img">
                 <section class="description_header">
-                    <router-link to="" class="description_top">
+                    <router-link to="/shop/shopDetail" class="description_top">
                         <section class="description_left">
                             <img :src="imgBaseUrl + shopDetailData.image_path">
                         </section>
@@ -56,7 +56,7 @@
                                             <strong class="menu_item_title">{{item.name}}</strong>
                                             <span class="menu_item_description">{{item.description}}</span>
                                         </section>
-                                        <span class="menu_detail_header_right"></span>
+                                        <span class="menu_detail_header_right" @click="showTitleDetail(index)"></span>
                                         <p class="description_tip" v-if="index == TitleDetailIndex">
                                             <span>{{item.name}}</span>
                                             {{item.description}}
@@ -96,7 +96,7 @@
                         </section>
                     </section>
                     <section class="buy_cart_container">
-                        <section class="cart_icon_num">
+                        <section class="cart_icon_num" @click="toggleCartList">
                             <div class="cart_icon_container" :class="{cart_icon_activity: totalPrice > 0, move_in_cart:receiveInCart}" ref="cartContainer">
                                 <span v-if="totalNum" class="cart_list_length">
                                     {{totalNum}}
@@ -119,7 +119,7 @@
                         <section class="cart_food_list" v-show="showCartList&&cartFoodList.length">
                             <header>
                                 <h4>购物车</h4>
-                                <div>
+                                <div @click="clearCart">
                                     <svg>
                                         <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#cart-remove"></use>
                                     </svg>
@@ -153,9 +153,16 @@
                             </section>
                         </section>
                     </transition>
+                    <transition name="fade">
+                        <div class="screen_cover" v-show="showCartList&&cartFoodList.length" @click="toggleCartList"></div>
+                    </transition>
                 </section>
             </transition>
         </section>
+        <loading v-show="showLoading || loadRatings"></loading>
+        <transition name="router-slid" mode="out-in">
+            <router-view></router-view> 
+        </transition>
     </div> 
 </template>
 <script>
@@ -317,8 +324,73 @@ export default {
             this.showMoveDot = [...this.showMoveDot, ...showMoveDot];
             this.elLeft = elLeft;
             this.elBottom = elBottom;
+        },
+        showTitleDetail(index){
+            if (this.TitleDetailIndex == index) {
+                this.TitleDetailIndex = null;
+            }else{
+                this.TitleDetailIndex = index;
+            }
+        },
+        /**
+         * 初始化和shopCart变化时，重新获取购物车改变过的数据，赋值 categoryNum，totalPrice，cartFoodList，整个数据流是自上而下的形式，所有的购物车数据都交给vuex统一管理，包括购物车组件中自身的商品数量，使整个数据流更加清晰
+         */
+        initCategoryNum(){
+            let newArr = [];
+            let cartFoodNum = 0;
+            this.totalPrice = 0;
+            this.cartFoodList = [];
+            this.menuList.forEach((item,index)=>{
+                if(this.shopCart&&this.shopCart[item.foods[0].category_id]){
+                    let num = 0 ;
+                    Object.keys(this.shopCart[item.foods[0].category_id]).forEach(itemid=>{
+                        Object.keys(this.shopCart[item.foods[0].category_id][itemid]).forEach(foodid=>{
+                            let foodItem = this.shopCart[item.foods[0].category_id][itemid][foodid];
+                            num += foodItem.num;
+                            if(item.type=1){
+                                this.totalPrice += foodItem.num*foodItem.price;
+                                if (foodItem.num > 0) {
+                                    this.cartFoodList[cartFoodNum] = {};
+                                    this.cartFoodList[cartFoodNum].category_id = item.foods[0].category_id;
+                                    this.cartFoodList[cartFoodNum].item_id = itemid;
+                                    this.cartFoodList[cartFoodNum].food_id = foodid;
+                                    this.cartFoodList[cartFoodNum].num = foodItem.num;
+                                    this.cartFoodList[cartFoodNum].price = foodItem.price;
+                                    this.cartFoodList[cartFoodNum].name = foodItem.name;
+                                    this.cartFoodList[cartFoodNum].specs = foodItem.specs;
+                                    cartFoodNum ++;
+                                }
+                            }
+                        })
+                    })
+                    newArr[index] = num;
+                }else{
+                    newArr[index] = 0;
+                }
+            })
+            this.totalPrice = this.totalPrice.toFixed(2);
+            this.categoryNum = [...newArr];
+        },
+        //控制购物列表是否显示
+        toggleCartList(){
+            this.cartFoodList.length ? this.showCartList = !this.showCartList : true;
+        },
+        //清除购物车
+        clearCart(){
+            this.toggleCartList();
+            this.CLEAR_CART(this.shopId);
+        },
+        //加入购物车，所需7个参数，商铺id，食品分类id，食品id，食品规格id，食品名字，食品价格，食品规格
+        addToCart(category_id, item_id, food_id, name, price, specs){
+            this.ADD_CART({shopid: this.shopId, category_id, item_id, food_id, name, price, specs});
+        },
+        //移出购物车，所需7个参数，商铺id，食品分类id，食品id，食品规格id，食品名字，食品价格，食品规格
+        removeOutCart(category_id, item_id, food_id, name, price, specs){
+            this.REDUCE_CART({shopid: this.shopId, category_id, item_id, food_id, name, price, specs});
+        },
+        goBack(){
+            this.$router.go(-1)
         }
-
     },
     watch:{
         //showLoading变化时说明组件已经获取初始化数据，在下一帧nextTick进行后续操作
@@ -326,9 +398,12 @@ export default {
             if (!value) {
                 this.$nextTick(() => {
                     this.getFoodListHeight();
-                    // this.initCategoryNum();
+                    this.initCategoryNum();
                 })
             }
+        },
+        shopCart: function (value){
+            this.initCategoryNum();
         },
     }
 }
