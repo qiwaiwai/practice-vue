@@ -10,6 +10,8 @@ const shop = r => require.ensure([], () => r(require('../page/shop/shop')), 'sho
 const foodDetail = r => require.ensure([], () => r(require('../page/shop/children/foodDetail')), 'foodDetail')
 const shopDetail = r => require.ensure([], () => r(require('../page/shop/children/shopDetail')), 'shopDetail')
 const confirmOrder = r => require.ensure([], () => r(require('../page/confirmOrder/confirmOrder')), 'confirmOrder')
+const remark = r => require.ensure([], () => r(require('../page/confirmOrder/children/remark')), 'remark')
+const chooseAddress = r => require.ensure([], () => r(require('../page/confirmOrder/children/chooseAddress')), 'chooseAddress')
 Vue.use(Router)
 
 export default new Router({
@@ -66,8 +68,13 @@ export default new Router({
     {
       path:'/confirmOrder',
       component:confirmOrder,
-      children:[
-        
+      children:[{
+          path:'remark',
+          component:remark
+        },{
+          path:'chooseAddress',
+          component:chooseAddress
+        }
       ]
     }
   ]
