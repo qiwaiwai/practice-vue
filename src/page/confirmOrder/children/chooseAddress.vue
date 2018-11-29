@@ -8,19 +8,19 @@
         <section id="scroll_section" class="scroll_container">
             <section class="list_cotainer">
                 <ul class="deliverable_address">
-                    <li>
-                        <svg class="choosed_address" >
+                    <li v-for="(item,index) in deliverable" @click.prevent.stop="chooseAddress(item, index)">
+                        <svg class="choosed_address" :class="{default_address: defaultIndex == index}">
                             <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select"></use>
                         </svg>
                         <div>
                             <header>
-                                <span>哈哈哈</span>
-                                <span>先生</span>
-                                <span>13659259555</span>   
+                                <span>{{item.name}}</span>
+                                <span>{{item.sex == 1? '先生' : '女士'}}</span>
+                                <span>{{item.phone}}</span>   
                             </header>
                             <div class="address_detail ellipsis">
-                                <span >公司</span>
-                                <p>航盛科技大厦</p>   
+                                <span v-if="item.tag" :style="{backgroundColor: iconColor(item.tag)}">{{item.tag}}</span>
+                                <p>{{item.address_detail}}</p>   
                             </div>
                         </div>
                     </li>
@@ -30,16 +30,94 @@
     </div>
 </template>
 <script>
-import headTop from 'src/components/header/head'
+ import headTop from 'src/components/header/head'
+    import {mapState, mapMutations} from 'vuex'
+    import {getAddress, getAddressList} from 'src/service/getData'
+    import alertTip from 'src/components/common/alertTip'
 export default {
     data(){
         return {
-
+            addressList: [], //地址列表
+            deliverable: [], //有效地址列表
+            deliverdisable: [], //无效地址列表
+            id: null, //ID
+            sig: null,
+            showAlert: false,
+            alertText: null,
         }
     },
+    created(){
+        this.id = this.$route.query.id;
+        this.sig = this.$route.query.sig;
+    },
     components:{
+        alertTip,
         headTop
-    }
+    },
+    computed: {
+            ...mapState([
+                'userInfo', 'addressIndex', 'newAddress'
+            ]),
+            //选择地址
+            defaultIndex: function (){
+                if (this.addressIndex) {
+                    return this.addressIndex;
+                }else{
+                    return 0;
+                }
+            }
+    },
+    methods: {
+            ...mapMutations([
+                'CHOOSE_ADDRESS'
+            ]),
+            //初始化信息
+            async initData(){
+                this.addressList = [];
+                this.deliverable = [];
+                this.deliverdisable = [];
+
+                if (this.userInfo && this.userInfo.user_id) {
+                    this.addressList = await getAddressList(this.userInfo.user_id);
+                    //将当前所有地址访问有效无效两种
+                    this.addressList.forEach(item => {
+                        if (item.is_deliverable) {
+                            this.deliverable.push(item);
+                        }else{
+                            this.deliverdisable.push(item);
+                        }
+                    })
+                    // this.$nextTick(() => {
+                    //     new BScroll('#scroll_section', {  
+                    //         deceleration: 0.003,
+                    //         bounce: true,
+                    //         swipeTime: 1800,
+                    //     }); 
+                    // })
+                }
+            },
+            iconColor(name){
+                switch(name){
+                    case '公司': return '#4cd964';
+                    case '学校': return '#3190e8';
+                }
+            },
+            //选择地址
+            chooseAddress(address, index){
+                this.CHOOSE_ADDRESS({address, index});
+                this.$router.go(-1);
+            },
+        },
+        watch: {
+            userInfo: function (value) {
+                if (value && value.user_id) {
+                    this.initData();
+                }
+            },
+            newAddress: function (value) {
+                this.initData();
+            },
+        }
 }
 </script>
 <style lang="scss" scoped>

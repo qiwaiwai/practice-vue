@@ -103,7 +103,7 @@
             </section>
             <section class="confrim_order">
                 <p>待支付 ¥26</p>
-                <p>确认下单</p>
+                <p @click="confrimOrder">确认下单</p>
             </section>
             <transition name="fade">
                 <div class="cover" v-if="showPayWay" @click="showPayWayFun"></div>
@@ -123,6 +123,7 @@
             </transition>
         </section>
         <loading v-if="showLoading"></loading>
+        <alert-tip v-if="showAlert" :alertText="alertText" @closeTip1="showAlert=false"></alert-tip>
         <transition name="router-slid" mode="out-in">
             <router-view></router-view>
         </transition>
@@ -169,6 +170,7 @@ export default {
             // this.showAlert = true;
             // this.alertText = '您还没有登录';
         }
+        console.log(this)
     },
     components:{
         headTop,
@@ -240,6 +242,40 @@ export default {
                 case '学校': return '#3190e8';
             }
         },
+        //确认订单
+        async confrimOrder(){
+            //用户未登录时弹出提示框
+            if(!(this.userInfo&&this.userInfo.user_id)){
+                this.showAlert = true;
+                this.alertText="请登录";
+                return 
+                //未选择地址则提示
+            }else if(!this.choosedAddress){
+                this.showAlert = true;
+                this.alertText = '请添加一个收货地址';
+                return
+            }
+            //保存订单
+            this.SAVE_ORDER_PARAM({
+                user_id: this.userInfo.user_id,
+                cart_id: this.checkoutData.cart.id,
+                address_id: this.choosedAddress.id,
+                description: this.remarklist,
+                entities: this.checkoutData.cart.groups,
+                geohash: this.geohash,
+                sig: this.checkoutData.sig,
+            });
+            //发送订单信息
+            let orderRes = await placeOrders(this.userInfo.user_id, this.checkoutData.cart.id, this.choosedAddress.id, this.remarklist, this.checkoutData.cart.groups, this.geohash, this.checkoutData.sig);
+            //第一次下单的手机号需要进行验证，否则直接下单成功
+            if(orderRes.need_validation){
+                this.NEED_VALIDATION(orderRes);
+                this.$router.push('/confirmOrder/userValidation');
+            }else{
+                this.ORDER_SUCCESS(orderRes);
+                this.$router.push('/confirmOrder/payment');
+            }
+        }
     },
     watch:{
         userInfo:function(value){

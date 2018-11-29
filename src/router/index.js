@@ -12,6 +12,8 @@ const shopDetail = r => require.ensure([], () => r(require('../page/shop/childre
 const confirmOrder = r => require.ensure([], () => r(require('../page/confirmOrder/confirmOrder')), 'confirmOrder')
 const remark = r => require.ensure([], () => r(require('../page/confirmOrder/children/remark')), 'remark')
 const chooseAddress = r => require.ensure([], () => r(require('../page/confirmOrder/children/chooseAddress')), 'chooseAddress')
+const payment = r => require.ensure([], () => r(require('../page/confirmOrder/children/payment')), 'payment')
+const order = r=>require.ensure([],()=>r(require('../page/order/order')),'order')
 Vue.use(Router)
 
 export default new Router({
@@ -74,8 +76,17 @@ export default new Router({
         },{
           path:'chooseAddress',
           component:chooseAddress
+        },{
+          path:'payment',
+          component:payment
         }
       ]
+    },
+    //订单列表页
+    {
+      path:'/order',
+      component:order,
+      children:[]
     }
   ]
 })

@@ -25,7 +25,7 @@
         props: ['alertText'],
         methods: {
             closeTip(){
-                this.$emit('closeTip1','子组件传值')
+                this.$emit('closeTip1','子组件传值','jjj')
             }
         }
     }

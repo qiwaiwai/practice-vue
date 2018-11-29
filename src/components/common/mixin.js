@@ -16,6 +16,7 @@ export const loadMore = {
 				let heightEl;
 				let scrollType = el.attributes.type && el.attributes.type.value;
 				let scrollReduce = 2;
+				
 				if (scrollType == 2) {
 					scrollEl = el;
 					heightEl = el.children[0];
@@ -57,7 +58,6 @@ export const loadMore = {
 				}
 
 				const loadMore = () => {
-					// console.log(height + setTop + paddingBottom + marginBottom - scrollReduce)
 					if (scrollEl.scrollTop + windowHeight >= height + setTop + paddingBottom + marginBottom - scrollReduce) {
 						binding.value();
 					}
